@@ -42,7 +42,7 @@ Holds presets for the progress functions. This is useful for re-using progress b
 
 Creates a new instance of `Progress` with the given values.
 
-### `DefaultProgress(colourSet *ColourSet)
+### `DefaultProgress(colourSet *ColourSet)`
 
 Initialises and returns a default `Progress` object. If `colourSet` is `nil`, a `DefaultColourSet()` is generated instead.
 
