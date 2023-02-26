@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jibstack64/gocular"
@@ -8,21 +10,50 @@ import (
 
 func main() {
 
-	sleeper := func(done *bool) {
+	colourset := gocular.DefaultColourSet()
+
+	sleeper := func(done *bool, err *error) {
 		time.Sleep(time.Second * 5)
 		*done = true
 	}
 
-	progress := gocular.NewProgress()
+	progress := gocular.DefaultProgress(colourset)
 
-	progress.Cycle(sleeper, "downloading", "downloaded nothing.")
+	progress.Cycle(sleeper, "downloading", "downloaded nothing.", "failed to download.")
 
-	progress.Dots(sleeper, "downloading", "downloaded nothing.")
+	fmt.Println()
 
-	progress.Bar(func(current *int) {
-		for i := 0; i < 5; i++ {
+	progress.Dots(sleeper, "downloading", "downloaded nothing.", "failed to download.")
+
+	fmt.Println()
+
+	progress.Bar(func(current *int, err *error) {
+		for i := 0; i < 16; i++ {
 			*current = i
+			if i == 13 {
+				*err = errors.New("oops")
+			}
 			time.Sleep(progress.Delay)
 		}
-	}, "downloading", "downloaded nothing.", 4)
+	}, "downloading", "downloaded nothing.", "failed to download: %s", 15)
+
+	fmt.Println()
+
+	fmt.Println(gocular.InputPrompt("what's your name?", true, colourset))
+
+	fmt.Println()
+
+	fmt.Println(gocular.InputBoolean("have you enjoyed today?", false, colourset))
+
+	fmt.Println()
+
+	choices := []string{
+		"discord", "instagram", "reddit",
+	}
+	index, err := gocular.InputChoices(choices, "what is your favourite social media?", false, colourset)
+	if err != nil {
+		colourset.Error.Println(err.Error())
+	} else {
+		colourset.Primary.Println(choices[index])
+	}
 }

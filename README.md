@@ -5,6 +5,3 @@
 *A simple TUI library for Go.*
 
 ![Preview](https://github.com/jibstack64/gocular/blob/master/preview.gif)
-
-## Under development
-### `gocular` is no where near finished and is not ready for use.

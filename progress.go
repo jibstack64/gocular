@@ -1,6 +1,7 @@
 package gocular
 
 import (
+	"fmt"
 	"math"
 	"time"
 )
@@ -31,39 +32,55 @@ type Progress struct {
 	Colours *ColourSet
 }
 
-func (pp *Progress) Cycle(runner func(done *bool), text string, finished string) {
-	ProgressCycle(runner, text, finished, pp.Elements, pp.Delay, pp.Colours)
+func (pp *Progress) Cycle(runner func(done *bool, err *error), text string, success string, failure string) error {
+	return ProgressCycle(runner, text, success, failure, pp.Elements, pp.Delay, pp.Colours)
 }
 
-func (pp *Progress) Dots(runner func(done *bool), text string, finished string) {
-	ProgressDots(runner, text, finished, pp.DotCount, pp.Delay, pp.Colours)
+func (pp *Progress) Dots(runner func(done *bool, err *error), text string, success string, failure string) error {
+	return ProgressDots(runner, text, success, failure, pp.DotCount, pp.Delay, pp.Colours)
 }
 
-func (pp *Progress) Bar(runner func(current *int), text string, finished string, size int) {
-	ProgressBar(runner, text, finished, size, pp.BarLength, pp.ShowPercentage, pp.Delay, pp.Colours)
+func (pp *Progress) Bar(runner func(current *int, err *error), text string, success string, failure string, size int) error {
+	return ProgressBar(runner, text, success, failure, size, pp.BarLength, pp.ShowPercentage, pp.Delay, pp.Colours)
+}
+
+// Creates a new `Progress` instance given the provided values.
+func NewProgress(delay time.Duration, elements string, dotCount int, barLength int, showPercentage bool, colours *ColourSet) *Progress {
+	return &Progress{
+		Delay:          delay,
+		Elements:       elements,
+		DotCount:       dotCount,
+		BarLength:      barLength,
+		ShowPercentage: showPercentage,
+		Colours:        colours,
+	}
 }
 
 // Initialises and returns a default `Progress` instance.
-func NewProgress() *Progress {
-	return &Progress{
-		Delay:          DEFAULT_DELAY,
-		Elements:       DEFAULT_ELEMENTS,
-		DotCount:       DEFAULT_DOT_COUNT,
-		BarLength:      DEFAULT_BAR_LENGTH,
-		ShowPercentage: DEFAULT_SHOW_PERCENTAGE,
-		Colours:        NewColourSet(),
+func DefaultProgress(colourset *ColourSet) *Progress {
+	if colourset == nil {
+		colourset = DefaultColourSet()
 	}
+	return NewProgress(
+		DEFAULT_DELAY,
+		DEFAULT_ELEMENTS,
+		DEFAULT_DOT_COUNT,
+		DEFAULT_BAR_LENGTH,
+		DEFAULT_SHOW_PERCENTAGE,
+		colourset,
+	)
 }
 
 // Prints `text` with a cyclic prefix (e.g. \ -> | -> / -> -).
 // The cycle characters are specified through the `cycle` slice.
 // Changes to the next `cycle` string every `delay` duration.
 // Stops when `done` is `true`.
-func ProgressCycle(runner func(done *bool), text string, finished string, cycle string, delay time.Duration, colours *ColourSet) {
+func ProgressCycle(runner func(done *bool, err *error), text string, success string, failure string, cycle string, delay time.Duration, colours *ColourSet) error {
 	done := false
-	go runner(&done)
+	var err error
+	go runner(&done, &err)
 	i := 0
-	for !done {
+	for !done && err == nil {
 		colours.Secondary.Printf("%s %s\n", string(cycle[i]), colours.Primary.Sprint(text))
 		time.Sleep(delay)
 		i += 1
@@ -72,18 +89,24 @@ func ProgressCycle(runner func(done *bool), text string, finished string, cycle 
 		}
 		ClearLine()
 	}
-	colours.Success.Println(finished)
+	if err != nil {
+		colours.Error.Printf(failure+"\n", err.Error())
+	} else {
+		colours.Success.Println(success)
+	}
+	return err
 }
 
 // Displays `text` with a series of trailing dots.
 // Adds another dot every `delay` duration.
 // The maximum number of dots is specified by the `count` integer.
 // Changes to finished text when `done` is equal to `true`.
-func ProgressDots(runner func(done *bool), text string, finished string, count int, delay time.Duration, colours *ColourSet) {
+func ProgressDots(runner func(done *bool, err *error), text string, success string, failure string, count int, delay time.Duration, colours *ColourSet) error {
 	done := false
-	go runner(&done)
+	var err error
+	go runner(&done, &err)
 	i := 0
-	for !done {
+	for !done && err == nil {
 		colours.Primary.Printf("%s%s\n", text, func() string {
 			d := ""
 			for x := -1; x < i; x++ {
@@ -98,7 +121,12 @@ func ProgressDots(runner func(done *bool), text string, finished string, count i
 		}
 		ClearLine()
 	}
-	colours.Success.Println(finished)
+	if err != nil {
+		colours.Error.Printf(failure+"\n", err.Error())
+	} else {
+		colours.Success.Println(success)
+	}
+	return err
 }
 
 // Receives progress from the goroutine `runner` through `current`.
@@ -106,30 +134,53 @@ func ProgressDots(runner func(done *bool), text string, finished string, count i
 // The length of the progress bar is determined by the `bar` value.
 // The progress bar will changed to a finished state when `current` is equal to `max`.
 // `delay` is the update frequency.
-func ProgressBar(runner func(current *int), text string, finished string, max int, bar int, showPercentage bool, delay time.Duration, colours *ColourSet) {
+func ProgressBar(runner func(current *int, err *error), text string, success string, failure string, max int, bar int, showPercentage bool, delay time.Duration, colours *ColourSet) error {
 	current := 0
-	go runner(&current)
-	for current != max {
-		cells := func() string {
-			s := ""
-			for x := 0; x < bar; x++ {
-				if ((float64(x) / float64(bar)) * float64(max)) > float64(current) {
-					s += "~"
-				} else {
-					s += "#"
-				}
+	var err error
+	go runner(&current, &err)
+	cells := func() string {
+		s := ""
+		for x := 0; x < bar; x++ {
+			if ((float64(x) / float64(bar)) * float64(max)) > float64(current) {
+				s += "~"
+			} else {
+				s += "#"
 			}
-			return s
-		}()
+		}
+		return s
+	}
+	full := func() int {
+		return int(math.Round(float64(current) / float64(max) * 100))
+	}
+	fmt.Println("⏳ " + colours.Primary.Sprint(text))
+	for current != max && err == nil {
 		if !showPercentage {
-			colours.Bracket.Printf("%s [%s]\n", colours.Primary.Sprint(text), colours.Secondary.Sprint(cells))
+			fmt.Printf(" ⮑ [%s]\n", colours.Secondary.Sprint(cells()))
 		} else {
-			colours.Bracket.Printf("%s [%s] (%s)\n",
-				colours.Primary.Sprint(text), colours.Secondary.Sprint(cells),
-				colours.Secondary.Sprintf("%d%%", int(math.Round(float64(current)/float64(max)*100))))
+			fmt.Printf(" ⮑ [%s] (%s)\n",
+				colours.Secondary.Sprint(cells()),
+				colours.Secondary.Sprintf("%d%%", full()))
 		}
 		time.Sleep(delay)
 		ClearLine()
 	}
-	colours.Success.Println(finished)
+	ClearLine()
+	if err != nil {
+		fmt.Println("❌ " + colours.Error.Sprintf(failure, err.Error()))
+		if !showPercentage {
+			fmt.Printf(" ⮑ [%s]\n", colours.Error.Sprint(cells()))
+		} else {
+			fmt.Printf(" ⮑ [%s] (%s)\n",
+				colours.Error.Sprint(cells()), colours.Error.Sprintf("%d%%", full()))
+		}
+	} else {
+		fmt.Println("✅ " + colours.Success.Sprint(success))
+		if !showPercentage {
+			fmt.Printf(" ⮑ [%s]\n", colours.Secondary.Sprint(cells()))
+		} else {
+			fmt.Printf(" ⮑ [%s] (%s)\n",
+				colours.Secondary.Sprint(cells()), colours.Success.Sprintf("%d%%", full()))
+		}
+	}
+	return err
 }
