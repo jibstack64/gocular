@@ -11,8 +11,7 @@ import (
 
 // Holds re-usable values for the InputXXXX functions.
 type Input struct {
-	Retry    bool
-	Fallback bool
+	Retry bool
 
 	// colourset
 	Colours *ColourSet
@@ -26,16 +25,15 @@ func (in *Input) Prompt(prompt string) string {
 	return InputPrompt(prompt, in.Retry, in.Colours)
 }
 
-func (in *Input) Boolean(prompt string) bool {
-	return InputBoolean(prompt, in.Fallback, in.Colours)
+func (in *Input) Boolean(prompt string, fallback bool) bool {
+	return InputBoolean(prompt, fallback, in.Colours)
 }
 
 // Creates a new input from the values given.
-func NewInput(retry bool, fallback bool, colours *ColourSet) *Input {
+func NewInput(retry bool, colours *ColourSet) *Input {
 	return &Input{
-		Retry:    retry,
-		Fallback: fallback,
-		Colours:  colours,
+		Retry:   retry,
+		Colours: colours,
 	}
 }
 

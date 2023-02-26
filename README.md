@@ -6,6 +6,8 @@
 
 For small, portable applications that don't need a major interface.
 
+Examples can be found in the `tests` folder.
+
 ---
 
 ## Colour
