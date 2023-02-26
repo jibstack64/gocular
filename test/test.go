@@ -43,7 +43,12 @@ func main() {
 
 	fmt.Println()
 
-	fmt.Println(gocular.InputBoolean("have you enjoyed today?", false, colourset))
+	enjoyed := gocular.InputBoolean("have you enjoyed today?", false, colourset)
+	if enjoyed {
+		fmt.Println("\nnice!")
+	} else {
+		fmt.Println("\nawe, that's too bad!")
+	}
 
 	fmt.Println()
 

@@ -6,14 +6,6 @@ import (
 	"time"
 )
 
-const (
-	DEFAULT_DELAY           = time.Millisecond * 500
-	DEFAULT_ELEMENTS        = "/|\\-"
-	DEFAULT_DOT_COUNT       = 3
-	DEFAULT_BAR_LENGTH      = 20
-	DEFAULT_SHOW_PERCENTAGE = true
-)
-
 // Holds presets for the progress functions.
 // This is useful if you re-use progress bars or cycles in your project.
 type Progress struct {
@@ -28,7 +20,7 @@ type Progress struct {
 	BarLength      int
 	ShowPercentage bool
 
-	// colourset
+	// colourSet
 	Colours *ColourSet
 }
 
@@ -57,17 +49,17 @@ func NewProgress(delay time.Duration, elements string, dotCount int, barLength i
 }
 
 // Initialises and returns a default `Progress` instance.
-func DefaultProgress(colourset *ColourSet) *Progress {
-	if colourset == nil {
-		colourset = DefaultColourSet()
+func DefaultProgress(colourSet *ColourSet) *Progress {
+	if colourSet == nil {
+		colourSet = DefaultColourSet()
 	}
 	return NewProgress(
-		DEFAULT_DELAY,
-		DEFAULT_ELEMENTS,
-		DEFAULT_DOT_COUNT,
-		DEFAULT_BAR_LENGTH,
-		DEFAULT_SHOW_PERCENTAGE,
-		colourset,
+		time.Millisecond*500,
+		"/|\\-",
+		3,
+		20,
+		true,
+		colourSet,
 	)
 }
 
