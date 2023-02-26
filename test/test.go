@@ -55,7 +55,7 @@ func main() {
 	choices := []string{
 		"discord", "instagram", "reddit",
 	}
-	index, err := gocular.InputChoices(choices, "what is your favourite social media?", false, colourset)
+	index, err := gocular.InputChoices(choices, "what is your favourite social media?", true, colourset)
 	if err != nil {
 		colourset.Error.Println(err.Error())
 	} else {

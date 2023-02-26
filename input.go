@@ -55,16 +55,24 @@ func InputChoices(choices []string, prompt string, retry bool, colours *ColourSe
 		input, _ = inputReader.ReadString('\n')
 		input = strings.ReplaceAll(input, "\n", "")
 		index, err := strconv.Atoi(input)
-		if (index < 1 || index > len(choices)) && err != nil {
-			err = errors.New("the index is out of bounds")
-		}
-		if retry && (input == "" || err != nil) {
-			ClearLine()
-			continue
-		} else if retry {
-			return index - 1, nil
+		if err != nil {
+			if !retry {
+				return index, err
+			} else {
+				ClearLine()
+				continue
+			}
 		} else {
-			return -1, err
+			if index > len(choices) || index < 1 {
+				if !retry {
+					return -1, errors.New("index out of range")
+				} else {
+					ClearLine()
+					continue
+				}
+			} else {
+				return index - 1, nil
+			}
 		}
 	}
 }
