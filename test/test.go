@@ -39,7 +39,7 @@ func main() {
 
 	fmt.Println()
 
-	fmt.Println(gocular.InputPrompt("what's your name?", true, colourset))
+	gocular.InputPrompt("what's your name?", true, colourset)
 
 	fmt.Println()
 
