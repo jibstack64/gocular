@@ -37,6 +37,7 @@ func processing(text string) {
 }
 
 func main() {
+
 	name := input.Prompt("What's your name?")
 
 	fmt.Println()
@@ -75,16 +76,17 @@ func main() {
 		}, "Loading negativity.", "Loaded negativity!", "Failed to load.", 7)
 		fmt.Println()
 	} else {
-		processing("Awe, sorry to hear. I'll give you your daily dose of happiness!")
+		processing("Oh! Alright, I'll load up some positivity for you!")
 		fmt.Println()
-		progress.Cycle(func(done *bool, err *error) {
-			for i := 0; i < 5; i++ {
-				if i == 4 {
-					*err = errors.New("couldn't retrieve happiness")
+		progress.Bar(func(current *int, err *error) {
+			for i := 0; i < 8; i++ {
+				*current = i
+				if i == 6 {
+					*err = errors.New("")
 				}
 				time.Sleep(time.Millisecond * 500)
 			}
-		}, "Loading happiness.", "Success!", "Failure: %s!")
+		}, "Loading positivity.", "Loaded positivity!", "Failed to load positivity.", 7)
 		fmt.Println()
 		processing("Oops! It seemed there was an error, one second!")
 		fmt.Println()

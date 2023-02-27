@@ -3,6 +3,7 @@ package gocular
 import (
 	"fmt"
 	"math"
+	"strings"
 	"time"
 )
 
@@ -158,7 +159,11 @@ func ProgressBar(runner func(current *int, err *error), text string, success str
 	}
 	ClearLine()
 	if err != nil {
-		fmt.Println("❌ " + colours.Error.Sprintf(failure, err.Error()))
+		if strings.Contains(failure, "%s") {
+			fmt.Println("❌ " + colours.Error.Sprintf(failure, err.Error()))
+		} else {
+			fmt.Println("❌ " + colours.Error.Sprint(failure))
+		}
 		if !showPercentage {
 			fmt.Printf(" ⮑ [%s]\n", colours.Error.Sprint(cells()))
 		} else {
