@@ -6,7 +6,7 @@
 
 ---
 
-> ![Preview](https://github.com/jibstack64/gocular/blob/master/examples/preview.mp4)
+> ![Preview](https://raw.githubusercontent.com/jibstack64/gocular/master/examples/preview.mp4)
 
 For small, portable applications that don't need a major interface.
 
