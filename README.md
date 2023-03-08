@@ -12,4 +12,4 @@ For small, portable applications that don't need a major interface.
 
 Examples can be found in the [tests folder](https://github.com/jibstack64/gocular/blob/master/tests).
 
-You can see the documentation [here](https://github.com/jibstack64/gocular/blob/master/docs).
+You can see the documentation [here](https://github.com/jibstack64/gocular/blob/master/docs/DOCS.md).
